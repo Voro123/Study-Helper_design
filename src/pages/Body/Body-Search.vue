@@ -5,7 +5,9 @@
         <img src="../../assets/images/表情包.png">
         <div class="input-bg">
           <input type="text" v-focus v-model="selContent"
-            placeholder="请输入想要搜索词条的名字或详细信息.." @keyup.enter="selectWords()">
+            placeholder="请输入想要搜索词条的名字或详细信息.."
+            @keydown="textareaKeydown($event,'selContent')"
+            @keyup="textareaKeyup" @keyup.enter="selectWords()">
           <button @click="selectWords()">搜索词条</button>
         </div>
       </div>
@@ -28,6 +30,7 @@
   </caption>
 </template>
 <script>
+import printPrettrier from '@/commFunction/printPrettrier.js'
 export default {
   name: 'BodySearch',
   props: ['words', 'checkingword'],
@@ -36,10 +39,19 @@ export default {
       selContent: '' // 获取用户输入的文本
     }
   },
+  mounted () {
+    printPrettrier.ecvironment = this
+  },
   methods: {
     emitData (methodName, ...para) {
       // 该方法用于触发home组件上方法
       this.$emit(methodName, ...para)
+    },
+    textareaKeyup (event) {
+      printPrettrier.keyup(event)
+    },
+    textareaKeydown (event, bindval) {
+      printPrettrier.keydown(event, bindval)
     },
     selectWords () {
       // 发起查询词条请求

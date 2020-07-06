@@ -4,12 +4,14 @@
       <div class="page-left">
         <template v-if="state===0">
           <p><span class="title">出题范围:</span><input type="text"
-              class="topic-range" v-model="range" placeholder="使用搜索规则进行查询" />
+              class="topic-range" v-model="range" placeholder="使用搜索规则进行查询"
+              @keydown="textareaKeydown($event,'range')"
+              @keyup="textareaKeyup" />
           </p>
           <p><span class="title">出题方式:</span>
             <select class="topic-way" v-model="way">
-              <option>给词条内容，答词条名</option>
               <option>给词条名，答词条内容</option>
+              <option>给词条内容，答词条名</option>
               <option>综合</option>
             </select>
           </p>
@@ -20,7 +22,7 @@
           <p>
             <span class="title">过滤词条:</span><br>
             <ul class="topic-blacklist">
-              <li v-if="!words.length">无</li>
+              <li v-if="!words||!words.length">无</li>
               <li v-for="obj in words" :key="obj.id">
                 {{obj.name}}
                 <span class="removeNoAppear"
@@ -32,25 +34,28 @@
         <template v-if="state===1">
           <p><span class="title">词条名:</span>
             <input v-if="topics[topicNo].way===0" type="text"
-              placeholder="在此处写下答案" v-model="tbAnswer" />
-            <span v-else>{{ topics[topicNo].name }}</span>
+              placeholder="在此处写下答案" v-model="tbAnswer"
+              @keydown="textareaKeydown($event,'tbAnswer')"
+              @keyup="textareaKeyup" />
+            <span class="words-span" v-else>{{ topics[topicNo].name }}</span>
           </p>
           <p>
             <span class="title">词条解释:</span><br>
             <textarea v-if="topics[topicNo].way===1" placeholder="在此处写下答案"
-              v-model="tbAnswer"></textarea>
+              v-model="tbAnswer" @keydown="textareaKeydown($event,'tbAnswer')"
+              @keyup="textareaKeyup"></textarea>
             <textarea v-else readonly
               v-model="topics[topicNo].introduce"></textarea>
           </p>
           <p class="footer">
-            <button v-if="topicNo===topics.length-1"
+            <button v-if="topics.length&&topicNo===topics.length-1"
               @click="submit">提交,开始对照答案</button>
             <span v-else>-{{topicNo+1}}/{{topics.length}}-</span>
           </p>
         </template>
         <template v-if="state===2">
           <p><span class="title">词条名:</span>
-            <span>{{ topics[topicNo].name }}</span>
+            <span class="words-span">{{ topics[topicNo].name }}</span>
           </p>
           <p>
             <span class="title">词条解释:</span><br>
@@ -97,26 +102,31 @@
           <span>-{{topicNo+1}}/{{topics.length}}-</span>
         </p>
       </div>
-      <button v-if="topicNo===topics.length-1&&tbRightWrong!==null"
+      <button
+        v-if="topics.length&&topicNo===topics.length-1&&tbRightWrong!==null"
         class="checkover" @click="checkover">检查完毕~</button>
     </div>
   </caption>
 </template>
 <script>
+import printPrettrier from '@/commFunction/printPrettrier.js'
 export default {
   name: 'BodyMemoryTrain',
   props: ['words'],
   data () {
     return {
       state: 0, // 答题状态,0表示还没开始,1表示正在答题,2表示正在检查
-      range: '', // 出题范围
-      way: '给词条内容，答词条名', // 出题方式
-      count: 10, // 出题数量
+      range: '$history(1)', // 出题范围
+      way: '给词条名，答词条内容', // 出题方式
+      count: 100, // 出题数量
       topics: [], // 题目数组
       topicNo: 0, // 题号
       tbAnswer: '', // 用户答案
       tbRightWrong: null // 本题对错
     }
+  },
+  mounted () {
+    printPrettrier.environment = this
   },
   watch: {
     state (newval) {
@@ -262,7 +272,8 @@ export default {
 
           // 如果是答词条名,将词条内容的关键字屏蔽
           if (temparr[ra].way === 0) {
-            temparr[ra].introduce = temparr[ra].introduce.replace(temparr[ra].name, '■')
+            let temp = new RegExp(temparr[ra].name, 'g')
+            temparr[ra].introduce = temparr[ra].introduce.replace(temp, '■')
           }
 
           this.topics.push(temparr[ra])
@@ -271,6 +282,12 @@ export default {
         }
         this.state = 1
       }.bind(this))
+    },
+    textareaKeyup (event) {
+      printPrettrier.keyup(event)
+    },
+    textareaKeydown (event, bindval) {
+      printPrettrier.keydown(event, bindval)
     }
   }
 }
@@ -395,6 +412,7 @@ export default {
     padding: 2px 50px;
     box-sizing: border-box;
     text-align: left;
+    white-space: nowrap;
 
     .title {
       padding-right: 5px;
@@ -450,6 +468,15 @@ export default {
           }
         }
       }
+    }
+
+    .words-span {
+      display: inline-block;
+      position: relative;
+      top: 4px;
+      width: 80%;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
     input[type='text'] {

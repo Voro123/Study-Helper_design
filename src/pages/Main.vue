@@ -160,7 +160,6 @@ export default {
           this.bodyModule = 'memory-train'
           this.axiosGetData('post', 'h3_getAppearWords', {}, function (res) {
             this.words = res.data
-            console.log(this.words)
           }.bind(this))
           break
         }

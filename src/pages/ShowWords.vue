@@ -5,16 +5,18 @@
     <div class="word-name">
       <h2 v-if="actioning===0" @dblclick="toUpdate">{{checkingword.name||''}}
       </h2>
-      <input v-else v-model="name" placeholder="词条名" v-focus />
+      <input v-else v-model="name" placeholder="词条名"
+        @keydown="textareaKeydown($event,'name')" @keyup="textareaKeyup"
+        v-focus />
     </div>
     <div class="word-introduce">
       <textarea v-if="actioning===0" :value="checkingword.introduce||''"
         @dblclick="toUpdate" readonly placeholder="该词条暂时还没有介绍哦~"></textarea>
       <textarea v-if="actioning===1" v-model="introduce" class="inserting"
-        @keydown="textareaKeydown" @keyup="textareaKeyup"
+        @keydown="textareaKeydown($event,'introduce')" @keyup="textareaKeyup"
         placeholder="具体描述.."></textarea>
       <textarea v-else-if="actioning===2" v-model="introduce"
-        @keydown="textareaKeydown" @keyup="textareaKeyup"
+        @keydown="textareaKeydown($event,'introduce')" @keyup="textareaKeyup"
         placeholder="该词条暂时还没有介绍哦~"></textarea>
     </div>
     <span v-if="actioning===0"
@@ -28,17 +30,18 @@
   </article>
 </template>
 <script>
-import setCaretPosition from '@/commFunction/setCaretPosition.js'
+import printPrettrier from '@/commFunction/printPrettrier.js'
 export default {
   props: ['checkingword', 'h1', 'h2', 'actioning'],
   name: 'ShowWords',
   data () {
     return {
       name: '', // 添加词条用
-      introduce: '',
-      shiftClicking: false,
-      ctrlClicking: false
+      introduce: ''
     }
+  },
+  mounted () {
+    printPrettrier.environment = this
   },
   watch: {
     // 监听actioning值的改变初始化变量
@@ -61,20 +64,11 @@ export default {
       // 关闭词条详细页
       this.emitData('setActioning', null)
     },
-
     textareaKeyup (event) {
-      switch (event.keyCode) {
-        // 松开shift时
-        case 16: {
-          this.shiftClicking = false
-          break
-        }
-        // 松开ctrl时
-        case 17: {
-          this.ctrlClicking = false
-          break
-        }
-      }
+      printPrettrier.keyup(event)
+    },
+    textareaKeydown (event, bindval) {
+      printPrettrier.keydown(event, bindval)
     },
     insert_h3 () {
       // 添加新词条
@@ -120,113 +114,6 @@ export default {
         }
         this.emitData('getFiles')
       }.bind(this))
-    },
-    textareaKeydown (event) {
-      event = event || window.event
-      var el = event.target
-      var elValue = el.value
-      // 光标位置
-      // selectStart即用户所选文本的开始位置,当用户未选择文本时,该值指示鼠标光标的位置
-      var selectStart = el.selectionStart
-      // 该值用来指示添加文本后,文本行数是否增加且超出可视区域,若是,滚动条往下滚动一行
-      var scrollHeight = el.scrollHeight
-
-      // 该方法用来提供统一替代的默认键盘事件
-      /* 参数解释:
-         repchar:输入的内容将替换为的字符串
-         offset:光标偏移字符量,为0时,光标将在替换字符串末尾;为-1时,光标将在替换字符串
-         末尾-1处 */
-      var defaultEventReplace = function (repchar, offset) {
-        // 删除用户所选文本
-        var selectEnd = el.selectionEnd
-        el.value = elValue.slice(0, selectStart) + elValue.slice(selectEnd)
-        elValue = el.value
-
-        el.value = elValue.slice(0, selectStart) + repchar + elValue.slice(selectStart)
-        setCaretPosition(el, selectStart + offset + repchar.length)
-        this.introduce = el.value
-        if (scrollHeight !== el.scrollHeight) {
-          el.scrollTop += 16
-        }
-        event.preventDefault()
-      }.bind(this)
-
-      switch (event.keyCode) {
-        // 点击换行 段前缩进继承处理
-        case 13: {
-          var i = elValue.lastIndexOf('\n', selectStart - 1) + 1
-          if (i === 1) { i = 0 }
-          var n = 0
-          while (elValue[i] === ' ') {
-            n++
-            i++
-          }
-          var str = ''
-          while (n > 0) {
-            str += ' '
-            n--
-          }
-          // 点击换行时,根据上次换行后的缩进自动填充换行后的缩进
-          defaultEventReplace('\n' + str, 0)
-          break
-        }
-        // 点击( 成对符号
-        case 57: {
-          if (this.shiftClicking) {
-            defaultEventReplace('()', -1)
-          }
-          break
-        }
-        // 点击s 自动提交编辑或添加
-        case 83: {
-          if (this.ctrlClicking) {
-            if (this.actioning === 1) {
-              // 提交词条添加
-              this.insert_h3()
-            } else if (this.actioning === 2) {
-              // 提交词条编辑
-              this.update_h3()
-            }
-            event.preventDefault()
-          }
-          break
-        }
-        // 点击< 成对符号
-        case 188: {
-          if (this.shiftClicking) {
-            defaultEventReplace('<>', -1)
-          }
-          break
-        }
-        // 点击[ 成对符号
-        case 219: {
-          if (!this.shiftClicking) {
-            defaultEventReplace('[]', -1)
-          } else {
-            defaultEventReplace('{}', -1)
-          }
-          break
-        }
-        // 点击'或" 成对符号
-        case 222: {
-          if (!this.shiftClicking) {
-            defaultEventReplace("''", -1)
-          } else {
-            defaultEventReplace('""', -1)
-          }
-          break
-        }
-        // 点击shift
-        case 16: {
-          this.shiftClicking = true
-          break
-        }
-        // 点击ctrl
-        case 17: {
-          this.ctrlClicking = true
-          break
-        }
-      }
     }
   }
 }
