@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import dropEventAdd from '@/singleFunction/Body/dropEventAdd'
+import dropEventAdd from '@/commFunction/dropEventAdd'
 
 const ColumnWords = 20 // 该值决定每一列的词条数量
 const pageWordCount = ColumnWords * 6 - 1 // 每一页的词条总数
@@ -40,12 +40,12 @@ export default {
       cannext: false
     }
   },
+  mounted () {
+    this.pageChange()
+  },
   watch: {
     words () {
-      this.$nextTick(function () {
-        this.pageChange()
-        dropEventAdd.call(this)
-      })
+      this.pageChange()
     },
     h3_page () {
       this.pageChange()
@@ -108,6 +108,20 @@ export default {
       } else {
         this.cannext = false
       }
+      this.$nextTick(function () {
+        // 添加拖拽监听事件
+        dropEventAdd.call(this, this.words, '[id^=word-]', 'word',
+          function (draggerID, dropperID) {
+            this.emitData('axiosGetData', 'get', 'resort/h3',
+              { dragger_id: draggerID, dropper_id: dropperID },
+              function (res) {
+                if (!res.data) {
+                  alert('词条移动失败了,请联系后台人员修复bug')
+                }
+                this.emitData('getFiles')
+              }.bind(this))
+          }.bind(this))
+      })
     }
   }
 }

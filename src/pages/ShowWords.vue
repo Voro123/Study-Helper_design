@@ -6,17 +6,16 @@
       <h2 v-if="actioning===0" @dblclick="toUpdate">{{checkingword.name||''}}
       </h2>
       <input v-else v-model="name" placeholder="词条名"
-        @keydown="textareaKeydown($event,'name')" @keyup="textareaKeyup"
-        v-focus />
+        @keydown="textareaKeydown($event,'name')" v-focus />
     </div>
     <div class="word-introduce">
       <textarea v-if="actioning===0" :value="checkingword.introduce||''"
         @dblclick="toUpdate" readonly placeholder="该词条暂时还没有介绍哦~"></textarea>
       <textarea v-if="actioning===1" v-model="introduce" class="inserting"
-        @keydown="textareaKeydown($event,'introduce')" @keyup="textareaKeyup"
+        @keydown="textareaKeydown($event,'introduce')"
         placeholder="具体描述.."></textarea>
       <textarea v-else-if="actioning===2" v-model="introduce"
-        @keydown="textareaKeydown($event,'introduce')" @keyup="textareaKeyup"
+        @keydown="textareaKeydown($event,'introduce')"
         placeholder="该词条暂时还没有介绍哦~"></textarea>
     </div>
     <span v-if="actioning===0"
@@ -63,9 +62,6 @@ export default {
     close () {
       // 关闭词条详细页
       this.emitData('setActioning', null)
-    },
-    textareaKeyup (event) {
-      printPrettrier.keyup(event)
     },
     textareaKeydown (event, bindval) {
       printPrettrier.keydown(event, bindval)

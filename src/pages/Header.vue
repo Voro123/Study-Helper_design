@@ -4,32 +4,34 @@
       Study-Helper
     </router-link>
     <ul v-cloak>
-      <li v-for=" (val,key) in arrFileFolders" :key="'header-'+val.id"
-        :class="{display_block:inserting === val.id}" class="h1_li">
-        <span>{{ key }}</span>
+      <li v-for="obj_h1 in arrFileFolders" :key="'header-'+obj_h1.id"
+        :class="{display_block:inserting === obj_h1.id}" class="h1_li">
+        <span>{{ obj_h1.name }}</span>
         <div>
           <ul>
-            <li v-for="val2 in val.childs" :key="'header2-'+val.id+'-'+val2">
-              <router-link :to="'#detail/'+key+'/'+val2" tag="div"
-                @click.native="emitData('getFiles')">
-                <span>{{ val2 }}</span>
+            <li v-for="obj_h2 in obj_h1.childs"
+              :id="'h2-'+obj_h1.id+'-'+obj_h2.id"
+              :key="'header2-'+obj_h1.id+'-'+obj_h2.id" draggable="true">
+              <router-link :to="'#detail/'+obj_h1.name+'/'+obj_h2.name"
+                tag="div" @click.native="emitData('getFiles')">
+                <span>{{ obj_h2.name }}</span>
                 <span class="h2_delete"
-                  @click.stop="h2_delete(key,val2)">×</span>
+                  @click.stop="h2_delete(obj_h1.name,obj_h2.name)">×</span>
               </router-link>
             </li>
             <li class="addnew">
               <div>
-                <span v-if="inserting !== val.id"
-                  @click="h2_inserting(val.id)">添加子目录</span>
+                <span v-if="inserting !== obj_h1.id"
+                  @click="h2_inserting(obj_h1.id)">添加子目录</span>
                 <input v-else v-model="tbtext" type="text" v-focus
-                  @keyup.enter="h2_inserted($event,key)"
+                  @keyup.enter="h2_inserted($event,obj_h1.name)"
                   @keyup.esc="h2_canselInsert"
-                  @blur="h2_inserted($event,key)" />
+                  @blur="h2_inserted($event,obj_h1.name)" />
               </div>
             </li>
             <li class="h1_delete">
               <div>
-                <span @click="h1_delete(key)">删除该目录</span>
+                <span @click="h1_delete(obj_h1.name)">删除该目录</span>
               </div>
             </li>
           </ul>
@@ -45,6 +47,7 @@
   </header>
 </template>
 <script>
+import dropEventAdd from '@/commFunction/dropEventAdd'
 export default {
   name: 'HomeHeader',
   props: ['arrFileFolders', 'spread'],
@@ -62,6 +65,7 @@ export default {
     // 在页面渲染完毕时调用resizeLi()方法
     arrFileFolders () {
       this.resizeLi()
+      this.h2_addDropEvent()
     },
     spread () {
       this.resizeLi()
@@ -74,6 +78,25 @@ export default {
     emitData (methodName, ...para) {
       // 该方法用于触发home组件上方法
       this.$emit(methodName, ...para)
+    },
+    h2_addDropEvent () {
+      this.$nextTick(function () {
+        // 添加拖拽监听事件
+        for (let objh1 of Object.values(this.arrFileFolders)) {
+          let arrh2 = objh1.childs
+          dropEventAdd.call(this, arrh2, `[id^=h2-${objh1.id}-]`,
+            `h2-${objh1.id}`, function (draggerID, dropperID) {
+              this.emitData('axiosGetData', 'get', 'resort/h2',
+                { dragger_id: draggerID, dropper_id: dropperID },
+                function (res) {
+                  if (!res.data) {
+                    alert('目录移动失败了,请联系后台人员修复bug')
+                  }
+                  this.emitData('getFileFolders')
+                }.bind(this))
+            }.bind(this))
+        }
+      })
     },
     resizeLi () {
       // 对展开/隐藏状态下的li元素排列处理
@@ -214,7 +237,7 @@ export default {
             this.confirming = false
           }.bind(this))
 
-          location.hash = '#/' + parents + '/' + this.tbtext
+          location.hash = '#detail/' + parents + '/' + this.tbtext
           this.emitData('getFiles')
           this.tbtext = null
         }.bind(this))
@@ -362,7 +385,6 @@ export default {
       div {
         position: absolute;
         display: none;
-        float: right;
         width: 100%;
         padding-top: 6px;
 
@@ -377,6 +399,7 @@ export default {
           border-radius: 3px;
 
           li {
+            position: relative;
             text-align: left;
             list-style: none;
 
@@ -439,6 +462,28 @@ export default {
         }
       }
     }
+  }
+
+  .dragover-top::before {
+    content: '';
+    position: absolute;
+    display: inline-block;
+    left: -2px;
+    top: -2px;
+    width: calc(100% + 2px);
+    height: 2px;
+    background: #a0a0a0;
+  }
+
+  .dragover-bottom::after {
+    content: '';
+    position: absolute;
+    display: inline-block;
+    left: -2px;
+    bottom: -2px;
+    width: calc(100% + 2px);
+    height: 2px;
+    background: #a0a0a0;
   }
 }
 </style>

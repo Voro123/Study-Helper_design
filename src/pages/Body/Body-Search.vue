@@ -7,7 +7,7 @@
           <input type="text" v-focus v-model="selContent"
             placeholder="请输入想要搜索词条的名字或详细信息.."
             @keydown="textareaKeydown($event,'selContent')"
-            @keyup="textareaKeyup" @keyup.enter="selectWords()">
+            @keyup.enter="selectWords()">
           <button @click="selectWords()">搜索词条</button>
         </div>
       </div>
@@ -40,15 +40,12 @@ export default {
     }
   },
   mounted () {
-    printPrettrier.ecvironment = this
+    printPrettrier.environment = this
   },
   methods: {
     emitData (methodName, ...para) {
       // 该方法用于触发home组件上方法
       this.$emit(methodName, ...para)
-    },
-    textareaKeyup (event) {
-      printPrettrier.keyup(event)
     },
     textareaKeydown (event, bindval) {
       printPrettrier.keydown(event, bindval)

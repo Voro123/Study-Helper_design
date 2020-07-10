@@ -171,7 +171,6 @@ export default {
       }
     },
     setActioning (actioning) {
-      console.log(1)
       // 用户试图改变当前行为时,若成功改变,返回true,否则返回false
       if (this.actioning === 1) {
         if (!confirm('确定取消添加当前词条吗？')) {

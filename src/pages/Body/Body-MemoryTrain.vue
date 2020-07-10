@@ -5,8 +5,7 @@
         <template v-if="state===0">
           <p><span class="title">出题范围:</span><input type="text"
               class="topic-range" v-model="range" placeholder="使用搜索规则进行查询"
-              @keydown="textareaKeydown($event,'range')"
-              @keyup="textareaKeyup" />
+              @keydown="textareaKeydown($event,'range')" />
           </p>
           <p><span class="title">出题方式:</span>
             <select class="topic-way" v-model="way">
@@ -35,15 +34,13 @@
           <p><span class="title">词条名:</span>
             <input v-if="topics[topicNo].way===0" type="text"
               placeholder="在此处写下答案" v-model="tbAnswer"
-              @keydown="textareaKeydown($event,'tbAnswer')"
-              @keyup="textareaKeyup" />
+              @keydown="textareaKeydown($event,'tbAnswer')" />
             <span class="words-span" v-else>{{ topics[topicNo].name }}</span>
           </p>
           <p>
             <span class="title">词条解释:</span><br>
             <textarea v-if="topics[topicNo].way===1" placeholder="在此处写下答案"
-              v-model="tbAnswer" @keydown="textareaKeydown($event,'tbAnswer')"
-              @keyup="textareaKeyup"></textarea>
+              v-model="tbAnswer" @keydown="textareaKeydown($event,'tbAnswer')"></textarea>
             <textarea v-else readonly
               v-model="topics[topicNo].introduce"></textarea>
           </p>
@@ -116,7 +113,7 @@ export default {
   data () {
     return {
       state: 0, // 答题状态,0表示还没开始,1表示正在答题,2表示正在检查
-      range: '$history(1)', // 出题范围
+      range: '$history(0)', // 出题范围
       way: '给词条名，答词条内容', // 出题方式
       count: 100, // 出题数量
       topics: [], // 题目数组
@@ -282,9 +279,6 @@ export default {
         }
         this.state = 1
       }.bind(this))
-    },
-    textareaKeyup (event) {
-      printPrettrier.keyup(event)
     },
     textareaKeydown (event, bindval) {
       printPrettrier.keydown(event, bindval)
@@ -494,6 +488,7 @@ export default {
       width: 100%;
       height: 340px;
       padding: 5px;
+      word-break: break-all;
       resize: none;
       overflow: auto;
       outline: none;

@@ -1,23 +1,37 @@
 import setCaretPosition from '@/commFunction/setCaretPosition.js'
 
+let shiftClicking = false
+let ctrlClicking = false
+
+window.addEventListener('keyup', keyup)
+window.addEventListener('keydown', keydown)
+function keydown (event) {
+  switch (event.keyCode) {
+    case 16: {
+      shiftClicking = true
+      break
+    }
+    case 17: {
+      ctrlClicking = true
+      break
+    }
+  }
+}
+function keyup (event) {
+  switch (event.keyCode) {
+    case 16: {
+      shiftClicking = false
+      break
+    }
+    case 17: {
+      ctrlClicking = false
+      break
+    }
+  }
+}
+
 var obj = {
   environment: null,
-  shiftClicking: false,
-  ctrlClicking: false,
-  keyup (event) {
-    switch (event.keyCode) {
-      // 松开shift时
-      case 16: {
-        obj.shiftClicking = false
-        break
-      }
-      // 松开ctrl时
-      case 17: {
-        obj.ctrlClicking = false
-        break
-      }
-    }
-  },
   keydown (event, bindval) {
     event = event || window.event
     var el = event.target
@@ -34,6 +48,7 @@ var obj = {
        offset:光标偏移字符量,为0时,光标将在替换字符串末尾;为-1时,光标将在替换字符串
        末尾-1处 */
     var defaultEventReplace = (repchar, offset) => {
+      event.preventDefault()
       // 删除用户所选文本
       var selectEnd = el.selectionEnd
       el.value = elValue.slice(0, selectStart) + elValue.slice(selectEnd)
@@ -45,7 +60,6 @@ var obj = {
       if (scrollHeight !== el.scrollHeight) {
         el.scrollTop += 16
       }
-      event.preventDefault()
     }
     switch (event.keyCode) {
       // 点击换行 段前缩进继承处理
@@ -68,14 +82,14 @@ var obj = {
       }
       // 点击( 成对符号
       case 57: {
-        if (obj.shiftClicking) {
+        if (shiftClicking) {
           defaultEventReplace('()', -1)
         }
         break
       }
       // 点击) 如果后面一个字符是)且前面有(,只移动光标一位
       case 48: {
-        if (obj.shiftClicking) {
+        if (shiftClicking) {
           if (elValue[selectStart] === ')') {
             if (elValue.lastIndexOf('(', selectStart - 1) >
               elValue.lastIndexOf(')', selectStart - 1)) {
@@ -87,7 +101,7 @@ var obj = {
       }
       // 点击s 自动提交编辑或添加
       case 83: {
-        if (obj.ctrlClicking) {
+        if (ctrlClicking) {
           if (typeof this.actioning !== 'undefined') {
             if (this.actioning === 1) {
               // 提交词条添加
@@ -104,7 +118,7 @@ var obj = {
       // 点击[ 成对符号
       // 点击{ 成对符号
       case 219: {
-        if (!obj.shiftClicking) {
+        if (!shiftClicking) {
           defaultEventReplace('[]', -1)
         } else {
           defaultEventReplace('{}', -1)
@@ -114,7 +128,7 @@ var obj = {
       // 点击] 如果后面一个字符是]且前面有[,只移动光标一位
       // 点击} 如果后面一个字符是}且前面有{,只移动光标一位
       case 221: {
-        if (!obj.shiftClicking) {
+        if (!shiftClicking) {
           if (elValue[selectStart] === ']') {
             if (elValue.lastIndexOf('[', selectStart - 1) >
               elValue.lastIndexOf(']', selectStart - 1)) {
@@ -133,21 +147,11 @@ var obj = {
       }
       // 点击'或" 成对符号
       case 222: {
-        if (!obj.shiftClicking) {
+        if (!shiftClicking) {
           defaultEventReplace("''", -1)
         } else {
           defaultEventReplace('""', -1)
         }
-        break
-      }
-      // 点击shift
-      case 16: {
-        obj.shiftClicking = true
-        break
-      }
-      // 点击ctrl
-      case 17: {
-        obj.ctrlClicking = true
         break
       }
     }
