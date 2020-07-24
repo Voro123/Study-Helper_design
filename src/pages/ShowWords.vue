@@ -215,6 +215,8 @@ export default {
       border-radius: 8px;
       outline-color: #0cc;
       outline-style: none;
+      overflow-x:hidden;
+      overflow-y:auto;
       resize: none;
 
       &[readonly] {

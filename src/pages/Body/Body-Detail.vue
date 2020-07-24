@@ -167,13 +167,11 @@ export default {
       }
 
       &>span {
-        position: relative;
         display: inline-block;
-        top: 50%;
+        padding-top: 5px;
         width: 100%;
         white-space: nowrap;
         text-overflow: ellipsis;
-        transform: translateY(-50%);
         overflow: hidden;
       }
 

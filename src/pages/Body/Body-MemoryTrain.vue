@@ -40,7 +40,8 @@
           <p>
             <span class="title">词条解释:</span><br>
             <textarea v-if="topics[topicNo].way===1" placeholder="在此处写下答案"
-              v-model="tbAnswer" @keydown="textareaKeydown($event,'tbAnswer')"></textarea>
+              v-model="tbAnswer"
+              @keydown="textareaKeydown($event,'tbAnswer')"></textarea>
             <textarea v-else readonly
               v-model="topics[topicNo].introduce"></textarea>
           </p>
@@ -490,7 +491,8 @@ export default {
       padding: 5px;
       word-break: break-all;
       resize: none;
-      overflow: auto;
+      overflow-x: hidden;
+      overflow-y: auto;
       outline: none;
     }
 

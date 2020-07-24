@@ -30,6 +30,9 @@ function keyup (event) {
   }
 }
 
+// 成对符号集合
+const doubleChars = [['(', ')'],['（','）'], ['[', ']'], ['{', '}'], ['"', '"'], ["'", "'"], ['‘', '’'], ['“', '”'], ['【', '】']]
+
 var obj = {
   environment: null,
   keydown (event, bindval) {
@@ -62,6 +65,18 @@ var obj = {
       }
     }
     switch (event.keyCode) {
+      // 点击退格 删除成对括号
+      case 8: {
+        for (let chars of doubleChars.values()) {
+          if (elValue[selectStart - 1] === chars[0] && elValue[selectStart] === chars[1]) {
+            el.value = elValue.slice(0, selectStart) +
+              elValue.slice(selectStart + 1)
+            setCaretPosition(el, selectStart)
+            break
+          }
+        }
+        break
+      }
       // 点击换行 段前缩进继承处理
       case 13: {
         var i = elValue.lastIndexOf('\n', selectStart - 1) + 1
@@ -102,13 +117,13 @@ var obj = {
       // 点击s 自动提交编辑或添加
       case 83: {
         if (ctrlClicking) {
-          if (typeof this.actioning !== 'undefined') {
-            if (this.actioning === 1) {
+          if (typeof this.environment.actioning !== 'undefined') {
+            if (this.environment.actioning === 1) {
               // 提交词条添加
-              this.insert_h3()
+              this.environment.insert_h3()
             } else if (this.actioning === 2) {
               // 提交词条编辑
-              this.update_h3()
+              this.environment.update_h3()
             }
             event.preventDefault()
           }
