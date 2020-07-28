@@ -31,7 +31,7 @@ function keyup (event) {
 }
 
 // 成对符号集合
-const doubleChars = [['(', ')'],['（','）'], ['[', ']'], ['{', '}'], ['"', '"'], ["'", "'"], ['‘', '’'], ['“', '”'], ['【', '】']]
+const doubleChars = [['(', ')'], ['（', '）'], ['[', ']'], ['{', '}'], ['"', '"'], ["'", "'"], ['‘', '’'], ['“', '”'], ['【', '】']]
 
 var obj = {
   environment: null,
@@ -49,11 +49,19 @@ var obj = {
     /* 参数解释:
        repchar:输入的内容将替换为的字符串
        offset:光标偏移字符量,为0时,光标将在替换字符串末尾;为-1时,光标将在替换字符串
-       末尾-1处 */
-    var defaultEventReplace = (repchar, offset) => {
-      event.preventDefault()
-      // 删除用户所选文本
+       末尾-1处
+       isdouble:是否在其后有字符时不执行 */
+    var defaultEventReplace = (repchar, offset, isdouble = false) => {
       var selectEnd = el.selectionEnd
+
+      if (isdouble) {
+        // 若后面跟有字符,则不执行
+        if (elValue[selectEnd] !== undefined && elValue[selectEnd] !== '\n') {
+          return
+        }
+      }
+
+      // 删除用户所选文本
       el.value = elValue.slice(0, selectStart) + elValue.slice(selectEnd)
       elValue = el.value
 
@@ -63,6 +71,7 @@ var obj = {
       if (scrollHeight !== el.scrollHeight) {
         el.scrollTop += 16
       }
+      event.preventDefault()
     }
     switch (event.keyCode) {
       // 点击退格 删除成对括号
@@ -98,7 +107,7 @@ var obj = {
       // 点击( 成对符号
       case 57: {
         if (shiftClicking) {
-          defaultEventReplace('()', -1)
+          defaultEventReplace('()', -1, true)
         }
         break
       }
@@ -134,9 +143,9 @@ var obj = {
       // 点击{ 成对符号
       case 219: {
         if (!shiftClicking) {
-          defaultEventReplace('[]', -1)
+          defaultEventReplace('[]', -1, true)
         } else {
-          defaultEventReplace('{}', -1)
+          defaultEventReplace('{}', -1, true)
         }
         break
       }
@@ -163,9 +172,9 @@ var obj = {
       // 点击'或" 成对符号
       case 222: {
         if (!shiftClicking) {
-          defaultEventReplace("''", -1)
+          defaultEventReplace("''", -1, true)
         } else {
-          defaultEventReplace('""', -1)
+          defaultEventReplace('""', -1, true)
         }
         break
       }
